@@ -1,4 +1,4 @@
-package payeer
+package payeer_api
 
 import (
 	"bytes"
@@ -63,29 +63,11 @@ func decode(mapData map[string]interface{}, response *GetPaySystemsResponse) {
 	for k, v := range mapData["list"].(map[string]interface{}) {
 		item := v.(map[string]interface{})
 		response.List[k] = ListItem{
-			ID:   item["id"].(string),
-			Name: item["name"].(string),
-			GateCommission: func() map[string]string {
-				if value, ok := item["gate_commission"].(map[string]string); ok {
-					return value
-				} else {
-					return nil
-				}
-			}(),
-			GateCommissionMin: func() map[string]string {
-				if value, ok := item["gate_commission_min"].(map[string]string); ok {
-					return value
-				} else {
-					return nil
-				}
-			}(),
-			GateCommissionMax: func() map[string]string {
-				if value, ok := item["gate_commission_max"].(map[string]string); ok {
-					return value
-				} else {
-					return nil
-				}
-			}(),
+			ID:                item["id"].(string),
+			Name:              item["name"].(string),
+			GateCommission:    convertToKVmap(item["gate_commission"]),
+			GateCommissionMin: convertToKVmap(item["gate_commission_min"]),
+			GateCommissionMax: convertToKVmap(item["gate_commission_max"]),
 			Currencies: func() []string {
 				var values []string
 				for _, v := range item["currencies"].([]interface{}) {
@@ -104,7 +86,7 @@ func decode(mapData map[string]interface{}, response *GetPaySystemsResponse) {
 				var retData = map[string]RFieldsItem{}
 				for k, item := range item["r_fields"].(map[string]interface{}) {
 					a := item.(map[string]interface{})
-					retData[k] =  RFieldsItem{
+					retData[k] = RFieldsItem{
 						Name: func() string {
 							if val, ok := a["name"].(string); ok {
 								return val
@@ -130,20 +112,29 @@ func decode(mapData map[string]interface{}, response *GetPaySystemsResponse) {
 				}
 				return retData
 			}(),
-			SumMin: func() map[string]string {
-				if value, ok := item["sum_min"].(map[string]string); ok {
-					return value
-				} else {
-					return nil
-				}
-			}(),
-			SumMax: func() map[string]string {
-				if value, ok := item["sum_max"].(map[string]string); ok {
-					return value
-				} else {
-					return nil
-				}
-			}(),
+			SumMin: convertToKVmap(item["sum_min"]),
+			SumMax: convertToKVmap(item["sum_max"]),
 		}
 	}
+}
+func convertToKVmap(i interface{}) map[string]string {
+	switch i.(type) {
+	case []interface{}:
+		return map[string]string{}
+	case map[string]interface{}:
+		result := map[string]string{}
+		for key, val := range i.(map[string]interface{}) {
+			switch val.(type) {
+			case string:
+				result[key] = val.(string)
+			case float32:
+				result[key] = strconv.FormatFloat(float64(val.(float32)),'f',2,32)
+			case float64:
+				result[key] = strconv.FormatFloat(val.(float64),'f',2,32)
+			}
+
+		}
+		return result
+	}
+	return map[string]string{}
 }

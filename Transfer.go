@@ -1,4 +1,4 @@
-package payeer
+package payeer_api
 
 import (
 	"bytes"
