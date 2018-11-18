@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-type PayoutToExternalResponse struct {
+type CheckPayoutToExternalResponse struct {
 	Error
 	OutputParams struct {
 		SumIn  int    `json:"sumIn"`
@@ -19,9 +19,9 @@ type PayoutToExternalResponse struct {
 	HistoryID int `json:"historyId"`
 }
 
-func (p *Payeer) PayoutToExternal(ps, sumIn, curIn, curOut string, fields map[string]string) (*PayoutToExternalResponse, error) {
+func (p *Payeer) CheckPayoutToExternal(ps, sumIn, curIn, curOut string, fields map[string]string) (*CheckPayoutToExternalResponse, error) {
 	data := &bytes.Buffer{}
-	p.data.Add("action", "output")
+	p.data.Add("action", "initOutput")
 	p.data.Add("ps", ps)
 	p.data.Add("sumIn", sumIn)
 	p.data.Add("curIn", curIn)
@@ -39,7 +39,7 @@ func (p *Payeer) PayoutToExternal(ps, sumIn, curIn, curOut string, fields map[st
 		return nil, err
 	}
 	defer res.Body.Close()
-	resData := &PayoutToExternalResponse{}
+	resData := &CheckPayoutToExternalResponse{}
 	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
 		return nil, err
 	}
