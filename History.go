@@ -3,8 +3,6 @@ package payeer_api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"strings"
 )
 
 type HistoryType string
@@ -21,20 +19,7 @@ const (
 	HistorySortDesc = HistorySort("desc")
 )
 
-type HistoryItem struct {
-	ID               string `json:"id"`
-	Date             string `json:"date"`
-	Type             string `json:"type"`
-	Status           string `json:"status"`
-	From             string `json:"from"`
-	To               string `json:"to"`
-	CreditedAmount   string `json:"creditedAmount"`
-	CreditedCurrency string `json:"creditedCurrency"`
-	Protect          string `json:"protect"`
-	ProtectDay       int    `json:"protectDay"`
-	Comment          string `json:"comment"`
-}
-type HistoryResponse struct {
+type HistoryRes struct {
 	Error
 	Params struct {
 		From  string `json:"from"`
@@ -42,10 +27,19 @@ type HistoryResponse struct {
 		Sort  string `json:"sort"`
 		Count int    `json:"count"`
 	} `json:"params"`
-	History map[string]HistoryItem `json:"history,null"`
+	History map[string]struct {
+		ID               string `json:"id"`
+		Date             string `json:"date"`
+		Type             string `json:"type"`
+		Status           string `json:"status"`
+		To               string `json:"to"`
+		CreditedAmount   string `json:"creditedAmount"`
+		CreditedCurrency string `json:"creditedCurrency"`
+		PaySystem        string `json:"paySystem"`
+	} `json:"history"`
 }
 
-func (p *Payeer) History(count int, historyType HistoryType, historySort HistorySort) (*HistoryResponse, error) {
+func (p *Payeer) History(count int, historyType HistoryType, historySort HistorySort) (*HistoryRes, error) {
 	data := &bytes.Buffer{}
 	p.data.Add("action", "history")
 	p.data.Add("count", string(count))
@@ -61,18 +55,19 @@ func (p *Payeer) History(count int, historyType HistoryType, historySort History
 		return nil, err
 	}
 	defer res.Body.Close()
-	resData := &HistoryResponse{}
-	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
-		if strings.Contains(err.Error(), "HistoryResponse.history") {
-			resData.History = map[string]HistoryItem{}
-		} else {
-			return nil, err
-		}
-
+	output := &HistoryRes{}
+	if err := json.NewDecoder(res.Body).Decode(output); err != nil {
+		return nil, err
 	}
-	if len(resData.Errors) != 0 {
-		return nil, errors.New(resData.Error.Errors[0])
-	} else {
-		return resData, err
+
+	switch e := output.Errors.(type) {
+	case []string:
+		if len(e) > 0 {
+			return nil, &output.Error
+		} else {
+			return output, nil
+		}
+	default:
+		return output, nil
 	}
 }

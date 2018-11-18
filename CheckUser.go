@@ -3,39 +3,35 @@ package payeer_api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"strings"
 )
 
-type CheckUserResponse struct {
-	Error
-	HistoryID int `json:"historyId"`
-}
-
-func (p *Payeer) CheckUser(accountNumber string) (*TransferResponse, error) {
+func (p *Payeer) CheckUser(accountNumber string) (error) {
 	data := &bytes.Buffer{}
 	p.data.Add("action", "checkUser")
 	p.data.Add("user", accountNumber)
 	_, err := data.WriteString(p.data.Encode())
 	if err != nil {
-		return nil, err
+		return err
 	}
 	res, err := p.request(data)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer res.Body.Close()
-	resData := &TransferResponse{}
-	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
-		if strings.Contains(err.Error(),"errors") {
-			resData.Errors = []string{}
-		}else{
-			return nil, err
+	output := &Error{}
+	if err := json.NewDecoder(res.Body).Decode(output); err != nil {
+		return err
+	}
+
+	switch e := output.Errors.(type) {
+	case []string:
+		if len(e) > 0 {
+			return output
+		} else {
+			return nil
 		}
+	default:
+		return nil
 	}
-	if len(resData.Errors) != 0 {
-		return nil, errors.New(resData.Error.Errors[0])
-	} else {
-		return resData, err
-	}
+
 }

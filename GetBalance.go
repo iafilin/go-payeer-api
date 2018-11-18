@@ -3,11 +3,9 @@ package payeer_api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"strings"
 )
 
-type GetBalanceResponse struct {
+type GetBalanceRes struct {
 	Error
 	Balance struct {
 		BCH struct {
@@ -53,7 +51,7 @@ type GetBalanceResponse struct {
 	} `json:"balance"`
 }
 
-func (p *Payeer) GetBalance() (*GetBalanceResponse, error) {
+func (p *Payeer) GetBalance() (*GetBalanceRes, error) {
 	data := &bytes.Buffer{}
 	p.data.Add("action", "balance")
 	_, err := data.WriteString(p.data.Encode())
@@ -65,17 +63,19 @@ func (p *Payeer) GetBalance() (*GetBalanceResponse, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-	resData := &GetBalanceResponse{}
-	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
-		if strings.Contains(err.Error(),"errors") {
-			resData.Errors = []string{}
-		}else{
-			return nil, err
-		}
+	output := &GetBalanceRes{}
+	if err := json.NewDecoder(res.Body).Decode(output); err != nil {
+		return nil, err
 	}
-	if len(resData.Errors) != 0 {
-		return nil, errors.New(resData.Error.Errors[0])
-	} else {
-		return resData, err
+
+	switch e := output.Errors.(type) {
+	case []string:
+		if len(e) > 0 {
+			return nil, &output.Error
+		} else {
+			return output, nil
+		}
+	default:
+		return output, nil
 	}
 }

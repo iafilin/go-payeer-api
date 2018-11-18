@@ -3,17 +3,21 @@ package payeer_api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"strings"
 )
 
-type PayoutToExternalResponse struct {
+type OutputRes struct {
 	Error
-	HistoryID int `json:"historyId"`
+	OutputParams struct {
+		SumIn  string `json:"sumIn"`
+		CurIn  string `json:"curIn"`
+		CurOut string `json:"curOut"`
+		Ps     int    `json:"ps"`
+		SumOut string `json:"sumOut"`
+	} `json:"outputParams"`
 }
 
-func (p *Payeer) PayoutToExternal(ps, sumIn, curIn, curOut string, fields map[string]string) (*PayoutToExternalResponse, error) {
+func (p *Payeer) Output(ps, sumIn, curIn, curOut string, fields map[string]string) (*OutputRes, error) {
 	data := &bytes.Buffer{}
 	p.data.Add("action", "output")
 	p.data.Add("ps", ps)
@@ -33,17 +37,19 @@ func (p *Payeer) PayoutToExternal(ps, sumIn, curIn, curOut string, fields map[st
 		return nil, err
 	}
 	defer res.Body.Close()
-	resData := &PayoutToExternalResponse{}
-	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
-		if strings.Contains(err.Error(),"errors") {
-			resData.Errors = []string{}
-		}else{
-			return nil, err
-		}
+	output := &OutputRes{}
+	if err := json.NewDecoder(res.Body).Decode(output); err != nil {
+		return nil, err
 	}
-	if len(resData.Errors) != 0 {
-		return nil, errors.New(resData.Error.Errors[0])
-	} else {
-		return resData, err
+
+	switch e := output.Errors.(type) {
+	case []string:
+		if len(e) > 0 {
+			return nil, &output.Error
+		} else {
+			return output, nil
+		}
+	default:
+		return output, nil
 	}
 }

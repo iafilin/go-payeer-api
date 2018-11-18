@@ -20,14 +20,24 @@ type Payeer struct {
 }
 
 type Error struct {
-	AuthError string   `json:"auth_error"`
-	Errors    []string `json:"errors"`
+	AuthError string      `json:"auth_error"`
+	Errors    interface{} `json:"errors"`
 }
 
-func (a *Error) Error() string {
-	return strings.Join(a.Errors, "\n")
+func (p *Error) Error() string {
+	switch err := p.Errors.(type) {
+	case bool:
+		return ""
+	case []string:
+		return strings.Join(err, ", ")
+	case string:
+		return err
+	default:
+		return ""
+	}
 
 }
+
 func New(accountNumber, apiId, apiKey string) *Payeer {
 	data := &url.Values{}
 	data.Add("account", accountNumber)
@@ -73,13 +83,14 @@ func (p *Payeer) CheckAuth() error {
 		return err
 	}
 	defer res.Body.Close()
-	resData := &Error{}
-	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
+	var resData = make(map[string]interface{})
+	if err := json.NewDecoder(res.Body).Decode(&resData); err != nil {
 		return err
 	}
-	if len(resData.Error()) != 0 {
-		return errors.New(resData.Error())
-	} else {
+	switch resData["errors"].(type) {
+	case []string:
+		return errors.New(resData["errors"].([]string)[0])
+	default:
 		return nil
 	}
 }
