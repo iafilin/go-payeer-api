@@ -7,6 +7,7 @@ import (
 	"fmt"
 )
 
+
 type PayoutToExternalResponse struct {
 	Error
 	OutputParams struct {

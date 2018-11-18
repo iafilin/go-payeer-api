@@ -20,12 +20,18 @@ type Payeer struct {
 }
 
 type Error struct {
-	AuthError string   `json:"auth_error"`
-	Errors    []string `json:"errors"`
+	AuthError string      `json:"auth_error"`
+	Errors    interface{} `json:"errors"`
 }
 
 func (a *Error) Error() string {
-	return strings.Join(a.Errors,"\n")
+	switch a.Errors.(type) {
+	case bool:
+		return ""
+	case []string:
+		return strings.Join(a.Errors.([]string), "\n")
+	}
+
 }
 func New(accountNumber, apiId, apiKey string) *Payeer {
 	data := &url.Values{}
