@@ -47,8 +47,8 @@ func (p *Payeer) GetPaySystems() (*GetPaySystemsResponse, error) {
 		return nil, err
 	}
 	decode(mapData, structData)
-	if len(structData.Error.Error()) != 0 {
-		return nil, errors.New(structData.Error.Error())
+	if len(structData.Errors) != 0 {
+		return nil, errors.New(structData.Error.Errors[0])
 	} else {
 		return structData, err
 	}
@@ -57,11 +57,7 @@ func decode(mapData map[string]interface{}, response *GetPaySystemsResponse) {
 	response.AuthError = mapData["auth_error"].(string)
 	response.List = map[string]ListItem{}
 	for _, err := range mapData["errors"].([]interface{}) {
-		switch response.Errors.(type) {
-		case []string:
-			response.Errors = append(response.Errors.([]string), err.(string))
-		}
-
+		response.Errors = append(response.Errors, err.(string))
 	}
 
 	for k, v := range mapData["list"].(map[string]interface{}) {
@@ -132,9 +128,9 @@ func convertToKVmap(i interface{}) map[string]string {
 			case string:
 				result[key] = val.(string)
 			case float32:
-				result[key] = strconv.FormatFloat(float64(val.(float32)), 'f', 2, 32)
+				result[key] = strconv.FormatFloat(float64(val.(float32)),'f',2,32)
 			case float64:
-				result[key] = strconv.FormatFloat(val.(float64), 'f', 2, 32)
+				result[key] = strconv.FormatFloat(val.(float64),'f',2,32)
 			}
 
 		}

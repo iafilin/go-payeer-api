@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"strings"
 )
 
 type CheckUserResponse struct {
@@ -26,10 +27,14 @@ func (p *Payeer) CheckUser(accountNumber string) (*TransferResponse, error) {
 	defer res.Body.Close()
 	resData := &TransferResponse{}
 	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
-		return nil, err
+		if strings.Contains(err.Error(),"errors") {
+			resData.Errors = []string{}
+		}else{
+			return nil, err
+		}
 	}
-	if len(resData.Error.Error()) != 0 {
-		return nil, errors.New(resData.Error.Error())
+	if len(resData.Errors) != 0 {
+		return nil, errors.New(resData.Error.Errors[0])
 	} else {
 		return resData, err
 	}

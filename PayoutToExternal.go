@@ -5,18 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 )
-
 
 type PayoutToExternalResponse struct {
 	Error
-	OutputParams struct {
-		SumIn  int    `json:"sumIn"`
-		CurIn  string `json:"curIn"`
-		CurOut string `json:"curOut"`
-		Ps     int    `json:"ps"`
-		SumOut int    `json:"sumOut"`
-	} `json:"outputParams"`
 	HistoryID int `json:"historyId"`
 }
 
@@ -42,10 +35,14 @@ func (p *Payeer) PayoutToExternal(ps, sumIn, curIn, curOut string, fields map[st
 	defer res.Body.Close()
 	resData := &PayoutToExternalResponse{}
 	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
-		return nil, err
+		if strings.Contains(err.Error(),"errors") {
+			resData.Errors = []string{}
+		}else{
+			return nil, err
+		}
 	}
-	if len(resData.Error.Error()) != 0 {
-		return nil, errors.New(resData.Error.Error())
+	if len(resData.Errors) != 0 {
+		return nil, errors.New(resData.Error.Errors[0])
 	} else {
 		return resData, err
 	}

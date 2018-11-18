@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type CheckPayoutToExternalResponse struct {
@@ -41,9 +42,13 @@ func (p *Payeer) CheckPayoutToExternal(ps, sumIn, curIn, curOut string, fields m
 	defer res.Body.Close()
 	resData := &CheckPayoutToExternalResponse{}
 	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
-		return nil, err
+		if strings.Contains(err.Error(),"errors") {
+			resData.Errors = []string{}
+		}else{
+			return nil, err
+		}
 	}
-	if len(resData.Error.Error()) != 0 {
+	if len(resData.Errors) != 0 {
 		return nil, errors.New(resData.Error.Error())
 	} else {
 		return resData, err
