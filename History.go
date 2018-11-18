@@ -70,8 +70,8 @@ func (p *Payeer) History(count int, historyType HistoryType, historySort History
 		}
 
 	}
-	if len(resData.Errors) != 0 {
-		return nil, errors.New(resData.Error.Errors[0])
+	if len(resData.Error.Error()) != 0 {
+		return nil, errors.New(resData.Error.Error())
 	} else {
 		return resData, err
 	}

@@ -68,8 +68,8 @@ func (p *Payeer) GetBalance() (*GetBalanceResponse, error) {
 	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
 		return nil, err
 	}
-	if len(resData.Errors) != 0 {
-		return nil, errors.New(resData.Error.Errors[0])
+	if len(resData.Error.Error()) != 0 {
+		return nil, errors.New(resData.Error.Error())
 	} else {
 		return resData, err
 	}
