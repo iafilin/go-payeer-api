@@ -82,8 +82,8 @@ func (p *Payeer) CheckAuth() error {
 	if err := json.NewDecoder(res.Body).Decode(resData); err != nil {
 		return err
 	}
-	if len(resData.Errors) != 0 {
-		return errors.New(resData.Errors[0])
+	if len(resData.Error()) != 0 {
+		return errors.New(resData.Error())
 	} else {
 		return nil
 	}

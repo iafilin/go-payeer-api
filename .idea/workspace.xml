@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="67fee6be-415f-4997-a0c7-06b46887c91e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PayoutToExternal.go" beforeDir="false" afterPath="$PROJECT_DIR$/PayoutToExternal.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/payeer.go" beforeDir="false" afterPath="$PROJECT_DIR$/payeer.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -129,7 +128,7 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" extendedState="1">
     <option name="y" value="23" />
     <option name="width" value="1440" />
     <option name="height" value="721" />
@@ -179,7 +178,7 @@
     </option>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="721" extended-state="0" />
+    <frame x="0" y="23" width="1440" height="721" extended-state="1" />
     <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
