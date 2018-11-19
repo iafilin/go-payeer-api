@@ -6,8 +6,7 @@ import (
 )
 
 func TestPayout(t *testing.T) {
-	client := New("P000", "000", "000")
-
+	client := New("P70510126", "389351680", "389351680")
 	res, err := client.GetPaySystems()
 	if err != nil {
 		t.Error(err.Error())

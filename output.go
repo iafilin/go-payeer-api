@@ -9,13 +9,15 @@ import (
 type OutputRes struct {
 	Error
 	OutputParams struct {
-		SumIn  string `json:"sumIn"`
+		SumIn  int    `json:"sumIn"`
 		CurIn  string `json:"curIn"`
 		CurOut string `json:"curOut"`
 		Ps     int    `json:"ps"`
-		SumOut string `json:"sumOut"`
+		SumOut int    `json:"sumOut"`
 	} `json:"outputParams"`
+	HistoryID int `json:"historyId"`
 }
+
 
 func (p *Payeer) Output(ps, sumIn, curIn, curOut string, fields map[string]string) (*OutputRes, error) {
 	data := &bytes.Buffer{}
